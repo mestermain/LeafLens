@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LeafLens - Coffee Leaf Diagnostics</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+    <style>
+      :root {
+        --dark-green: #1b4332;
+        --forest-green: #2d6a4f;
+        --emerald: #40916c;
+        --mint-green: #52b788;
+        --light-green: #d8f3dc;
+        --pale-green: #f2f9f4;
+        --pure-white: #ffffff;
+        --text-dark: #1b4332;
+        --text-muted: #4a5d52;
+        --border-green: #c7e9d0;
+      }
+
+      body {
+        font-family: "Plus Jakarta Sans", sans-serif;
+        background-color: var(--pale-green);
+        color: var(--text-dark);
+        min-height: 100vh;
+        padding-bottom: 50px;
+      }
+
+      .navbar-custom {
+        background-color: var(--dark-green);
+        border-bottom: 3px solid var(--mint-green);
+        box-shadow: 0 4px 15px rgba(27, 67, 50, 0.15);
+      }
+
+      .navbar-brand {
+        color: var(--pure-white) !important;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+
+      .brand-logo-img, .hero-logo-img {
+        border-radius: 50%;
+        object-fit: cover;
+      }
+
+      .brand-logo-img {
+        height: 46px; width: 46px;
+        border: 2px solid var(--mint-green);
+      }
+
+      .hero-logo-img {
+        height: 90px; width: 90px;
+        border: 3px solid var(--forest-green);
+        box-shadow: 0 6px 18px rgba(27, 67, 50, 0.15);
+      }
+
+      .hero-title {
+        font-weight: 800;
+        color: var(--dark-green);
+      }
+
+      .card-custom {
+        background-color: var(--pure-white);
+        border: 1px solid var(--border-green);
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(27, 67, 50, 0.07);
+        transition: all 0.3s ease;
+      }
+
+      .drop-zone {
+        border: 2px dashed var(--forest-green);
+        border-radius: 14px;
+        padding: 35px 20px;
+        text-align: center;
+        background-color: var(--pale-green);
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .drop-zone:hover, .drop-zone.dragover {
+        border-color: var(--dark-green);
+        background-color: var(--light-green);
+      }
+
+      .btn-green {
+        background-color: var(--dark-green);
+        color: var(--pure-white);
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 12px 24px;
+        border: none;
+      }
+
+      .btn-green:hover:not(:disabled) {
+        background-color: var(--forest-green);
+        transform: translateY(-2px);
+      }
+
+      .btn-green:disabled { background-color: #a0c4b2; cursor: not-allowed; }
+
+      
+      .sample-img:hover {
+        transform: scale(1.05);
+        border-color: var(--mint-green) !important;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      }
+      
+      .img-display {
+        border-radius: 12px;
+        width: 100%;
+        height: 320px;
+        object-fit: cover;
+        border: 2px solid var(--border-green);
+      }
+
+      .badge-confidence {
+        font-size: 1.05rem;
+        padding: 8px 18px;
+        border-radius: 30px;
+        background-color: var(--dark-green);
+        color: var(--pure-white);
+        font-weight: 700;
+      }
+
+      .progress-custom-bg {
+        height: 14px;
+        border-radius: 7px;
+        background-color: var(--light-green);
+        overflow: hidden;
+      }
+
+      .progress-bar-fill {
+        background-color: var(--forest-green);
+        border-radius: 7px;
+        transition: width 0.6s ease;
+      }
+
+      .alert-info-custom {
+        background-color: var(--pale-green);
+        border: 1px solid var(--border-green);
+        border-left: 5px solid var(--dark-green);
+        border-radius: 10px;
+        color: var(--dark-green);
+      }
+
+      .spinner-custom { width: 3rem; height: 3rem; color: var(--dark-green); }
+    </style>
+  </head>
+  <body>
+
+    <!-- Header Banner -->
+    <div class="container text-center my-4">
+      <div class="d-flex align-items-center justify-content-center gap-3 mb-2">
+        <img src="{{ url_for('static', filename='leaflens_logo.jpg') }}" alt="Logo" class="hero-logo-img" />
+        <h1 class="hero-title display-5 mb-0">LeafLens Diagnostics</h1>
+      </div>
+      <p class="fs-5 mt-2 fw-semibold" style="font-style: italic; color: #2d6a4f">"Leaves tell us the Story"</p>
+    </div>
+
+
+      <div class="row g-4">
+        <!-- Upload Column -->
+        <div class="col-lg-5">
+          <div class="card card-custom p-4 mb-3">
+            <h4 class="fw-bold mb-3"><i class="fa-solid fa-cloud-arrow-up text-success me-2"></i> Upload Image</h4>
+            <div class="alert alert-warning p-2 mb-3 rounded-3 small border border-warning" style="background-color: #fff9e6; color: #856404;">
+              <i class="fa-solid fa-lightbulb text-warning"></i> <strong>Important:</strong> Background must be <strong>white</strong>.
+            </div>
+            <form id="uploadForm">
+              <div class="drop-zone mb-3" id="dropZone">
+                <i class="fa-solid fa-image display-4 text-success mb-2"></i>
+                <h6 class="fw-bold">Drag & Drop Image</h6>
+                <p class="small text-muted">or click to browse (JPG, PNG)</p>
+                <input type="file" id="fileInput" name="file" accept=".jpg, .jpeg, .png" class="d-none" />
+              </div>
+              <div id="previewContainer" class="d-none text-center mb-3">
+                <img id="imagePreview" src="" class="img-fluid rounded-3 shadow-sm border border-success" style="max-height: 200px" />
+                <br /><button type="button" class="btn btn-sm btn-outline-danger mt-2 fw-bold" id="removeImgBtn">Remove Image</button>
+              </div>
+              <div id="errorMsg" class="alert alert-danger d-none small fw-bold"></div>
+              <button type="submit" class="btn btn-green w-100 py-3 fs-5" id="submitBtn" disabled>
+                <i class="fa-solid fa-microscope me-2"></i> Run LeafLens AI
+              </button>
+            </form>
+          </div>
+
+          <!-- Sample Images Card -->
+          <div class="card card-custom p-4 mb-3">
+            <h5 class="fw-bold text-dark mb-3"><i class="fa-solid fa-images text-success me-2"></i> Try a Sample Leaf</h5>
+            <div class="row g-2 text-center">
+              <div class="col-3">
+                <img src="{{ url_for('static', filename='samples/sample_healthy.png') }}" class="img-fluid rounded border border-2 border-light sample-img" style="cursor: pointer; transition: 0.2s;" onclick="loadSampleImage('{{ url_for('static', filename='samples/sample_healthy.png') }}', 'sample_healthy.png')" alt="Healthy" title="Healthy">
+                <small class="d-block mt-1 fw-bold text-muted" style="font-size: 0.7rem;">Healthy</small>
+              </div>
+              <div class="col-3">
+                <img src="{{ url_for('static', filename='samples/sample_nitrogen.png') }}" class="img-fluid rounded border border-2 border-light sample-img" style="cursor: pointer; transition: 0.2s;" onclick="loadSampleImage('{{ url_for('static', filename='samples/sample_nitrogen.png') }}', 'sample_nitrogen.png')" alt="Nitrogen" title="Nitrogen">
+                <small class="d-block mt-1 fw-bold text-muted" style="font-size: 0.7rem;">Nitrogen</small>
+              </div>
+              <div class="col-3">
+                <img src="{{ url_for('static', filename='samples/sample_phosphorus.png') }}" class="img-fluid rounded border border-2 border-light sample-img" style="cursor: pointer; transition: 0.2s;" onclick="loadSampleImage('{{ url_for('static', filename='samples/sample_phosphorus.png') }}', 'sample_phosphorus.png')" alt="Phosphorus" title="Phosphorus">
+                <small class="d-block mt-1 fw-bold text-muted" style="font-size: 0.7rem;">Phosphorus</small>
+              </div>
+              <div class="col-3">
+                <img src="{{ url_for('static', filename='samples/sample_potassium.png') }}" class="img-fluid rounded border border-2 border-light sample-img" style="cursor: pointer; transition: 0.2s;" onclick="loadSampleImage('{{ url_for('static', filename='samples/sample_potassium.png') }}', 'sample_potassium.png')" alt="Potassium" title="Potassium">
+                <small class="d-block mt-1 fw-bold text-muted" style="font-size: 0.7rem;">Potassium</small>
+              </div>
+            </div>
+          </div>
+
+          
+          <div class="card card-custom p-4">
+            <h5 class="fw-bold text-dark"><i class="fa-solid fa-camera text-success me-2"></i> Guidelines</h5>
+            <ul class="small text-muted mb-0 ps-3">
+              <li class="mb-2"><strong>White Background:</strong> Place leaf on white paper.</li>
+              <li class="mb-2"><strong>Single Leaf Focus:</strong> One leaf centered in frame.</li>
+              <li class="mb-2"><strong>Natural Lighting:</strong> Avoid shadows or flash.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Results Column -->
+        <div class="col-lg-7">
+          <div id="loadingState" class="card card-custom p-5 text-center d-none">
+            <div class="spinner-border spinner-custom mx-auto mb-3"></div>
+            <h5 class="fw-bold">LeafLens is Analyzing...</h5>
+            <p class="text-muted small">Executing ViT-B/16 tensor inference & Grad-CAM.</p>
+          </div>
+
+          <div id="placeholderState" class="card card-custom p-5 text-center h-100 d-flex align-items-center justify-content-center">
+            <i class="fa-solid fa-seedling text-success display-1 mb-3"></i>
+            <h5 class="fw-bold text-dark">Ready for Diagnosis</h5>
+            <p class="text-muted small">Upload an image on the left to begin.</p>
+          </div>
+
+          <div id="resultContainer" class="d-none">
+            <div class="card card-custom p-4 mb-4">
+              <div class="d-flex align-items-center justify-content-between flex-wrap mb-3">
+                <div>
+                  <span class="badge bg-success mb-1"><i class="fa-solid fa-circle-check"></i> Diagnosis Complete</span>
+                  <h3 class="fw-bold text-success-dark mb-0" id="predictedTitle">--</h3>
+                </div>
+                <div><span class="badge badge-confidence" id="confidenceBadge">0.0% / 100%</span></div>
+              </div>
+
+              <div class="alert alert-info-custom p-3 mb-3">
+                <h6 class="fw-bold mb-1"><i class="fa-solid fa-circle-info"></i> Symptom Description:</h6>
+                <p class="small mb-2" id="descText">--</p>
+                <h6 class="fw-bold mb-1"><i class="fa-solid fa-kit-medical"></i> Remedial Action:</h6>
+                <p class="small mb-0" id="actionText">--</p>
+              </div>
+
+              <h5 class="fw-bold mb-3"><i class="fa-solid fa-eye text-success me-2"></i> Visual Heatmap</h5>
+              <div class="row g-3 mb-4">
+                <div class="col-md-6 text-center">
+                  <p class="small text-muted fw-bold mb-1">Original Input</p>
+                  <img id="origImg" src="" class="img-display" />
+                </div>
+                <div class="col-md-6 text-center">
+                  <p class="small text-success fw-bold mb-1">Grad-CAM Heatmap</p>
+                  <img id="gradcamImg" src="" class="img-display" />
+                </div>
+              </div>
+
+              <h5 class="fw-bold mb-3"><i class="fa-solid fa-chart-bar text-success me-2"></i> Class Probabilities</h5>
+              <div id="probBarsContainer"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const dropZone = document.getElementById("dropZone");
+      const fileInput = document.getElementById("fileInput");
+      const imagePreview = document.getElementById("imagePreview");
+      const previewContainer = document.getElementById("previewContainer");
+      const removeImgBtn = document.getElementById("removeImgBtn");
+      const submitBtn = document.getElementById("submitBtn");
+      const errorMsg = document.getElementById("errorMsg");
+      const uploadForm = document.getElementById("uploadForm");
+      
+      const loadingState = document.getElementById("loadingState");
+      const placeholderState = document.getElementById("placeholderState");
+      const resultContainer = document.getElementById("resultContainer");
+
+      dropZone.addEventListener("click", () => fileInput.click());
+      
+      dropZone.addEventListener("dragover", (e) => {
+        e.preventDefault(); dropZone.classList.add("dragover");
+      });
+      
+      dropZone.addEventListener("dragleave", () => dropZone.classList.remove("dragover"));
+      
+      dropZone.addEventListener("drop", (e) => {
+        e.preventDefault(); dropZone.classList.remove("dragover");
+        if (e.dataTransfer.files.length) { fileInput.files = e.dataTransfer.files; handleFile(); }
+      });
+
+      fileInput.addEventListener("change", handleFile);
+      removeImgBtn.addEventListener("click", () => {
+        fileInput.value = ""; previewContainer.classList.add("d-none"); dropZone.classList.remove("d-none"); submitBtn.disabled = true; errorMsg.classList.add("d-none");
+      });
+
+      function handleFile() {
+        errorMsg.classList.add("d-none");
+        if (fileInput.files.length > 0) {
+          const f = fileInput.files[0];
+          if (!f.type.startsWith("image/")) { showError("Please upload a valid image file (JPG, PNG)."); return; }
+          const reader = new FileReader();
+          reader.onload = (e) => { imagePreview.src = e.target.result; dropZone.classList.add("d-none"); previewContainer.classList.remove("d-none"); submitBtn.disabled = false; };
+          reader.readAsDataURL(f);
+        }
+      }
+
+      function showError(msg) { errorMsg.textContent = msg; errorMsg.classList.remove("d-none"); submitBtn.disabled = true; }
+
+      uploadForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (!fileInput.files.length) return;
+        
+        errorMsg.classList.add("d-none"); placeholderState.classList.add("d-none"); resultContainer.classList.add("d-none"); loadingState.classList.remove("d-none"); submitBtn.disabled = true;
+
+        const formData = new FormData();
+        formData.append("file", fileInput.files[0]);
+
+        try {
+          const res = await fetch("/predict", { method: "POST", body: formData });
+          const data = await res.json();
+          if (!res.ok || !data.success) throw new Error(data.error || "Unknown server error.");
+          renderResults(data);
+        } catch (err) {
+          loadingState.classList.add("d-none"); placeholderState.classList.remove("d-none"); showError(err.message); submitBtn.disabled = false;
+        }
+      });
+
+      function renderResults(data) {
+        document.getElementById("predictedTitle").textContent = data.class_title;
+        document.getElementById("confidenceBadge").textContent = `${data.confidence}% / 100%`;
+        document.getElementById("descText").textContent = data.description;
+        document.getElementById("actionText").textContent = data.action;
+        document.getElementById("origImg").src = data.original_image_base64;
+        document.getElementById("gradcamImg").src = data.gradcam_image_base64;
+        
+        const probContainer = document.getElementById("probBarsContainer");
+        probContainer.innerHTML = data.probabilities.map(p => `
+          <div class="mb-3">
+            <div class="d-flex justify-content-between small fw-bold mb-1">
+              <span>${p.title}</span><span class="text-success">${p.probability}%</span>
+            </div>
+            <div class="progress-custom-bg">
+              <div class="progress-bar-fill h-100" style="width: ${p.probability}%"></div>
+            </div>
+          </div>
+        `).join("");
+
+        loadingState.classList.add("d-none");
+        resultContainer.classList.remove("d-none");
+        submitBtn.disabled = false;
+      }
+    
+      async function loadSampleImage(url, filename) {
+        errorMsg.classList.add("d-none");
+        
+        try {
+          const response = await fetch(url);
+          const blob = await response.blob();
+          const file = new File([blob], filename, { type: blob.type });
+          
+          // Create a DataTransfer object to simulate file input selection
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(file);
+          fileInput.files = dataTransfer.files;
+          
+          handleFile(); // Render preview
+          
+          // Automatically trigger the form submission after a tiny delay
+          setTimeout(() => {
+            uploadForm.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+          }, 300);
+          
+        } catch (err) {
+          showError("Failed to load sample image.");
+        }
+      }
+
+    </script>
+  </body>
+</html>
